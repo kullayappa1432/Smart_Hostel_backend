@@ -49,20 +49,20 @@ export class RoomsController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Get room details with current occupants' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.roomsService.findOne(BigInt(id));
+    return this.roomsService.findOne((id));
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Update room' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoomDto) {
-    return this.roomsService.update(BigInt(id), dto);
+    return this.roomsService.update((id), dto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Delete room' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.roomsService.remove(BigInt(id));
+    return this.roomsService.remove((id));
   }
 }

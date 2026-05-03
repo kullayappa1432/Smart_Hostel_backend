@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { VisitorsService } from './visitors.service';
 import { CreateVisitorDto, CheckOutVisitorDto, GetVisitorsQueryDto } from './dto/visitor.dto';
@@ -45,24 +46,24 @@ export class VisitorsController {
 
   @Get('history/:studentId')
   @Roles('ADMIN', 'WARDEN')
-  getVisitorHistory(@Param('studentId') studentId: string) {
-    return this.visitorsService.getVisitorHistory(BigInt(studentId));
+  getVisitorHistory(@Param('studentId', ParseIntPipe) studentId: number) {
+    return this.visitorsService.getVisitorHistory(studentId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.visitorsService.findOne(BigInt(id));
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.visitorsService.findOne(id);
   }
 
   @Patch(':id/checkout')
   @Roles('ADMIN', 'WARDEN', 'ATTENDER')
-  checkOut(@Param('id') id: string, @Body() checkOutVisitorDto: CheckOutVisitorDto) {
-    return this.visitorsService.checkOut(BigInt(id), checkOutVisitorDto);
+  checkOut(@Param('id', ParseIntPipe) id: number, @Body() checkOutVisitorDto: CheckOutVisitorDto) {
+    return this.visitorsService.checkOut(id, checkOutVisitorDto);
   }
 
   @Delete(':id')
   @Roles('ADMIN')
-  remove(@Param('id') id: string) {
-    return this.visitorsService.remove(BigInt(id));
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.visitorsService.remove(id);
   }
 }

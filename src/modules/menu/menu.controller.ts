@@ -45,13 +45,13 @@ export class MenuController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Update menu' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateMenuDto) {
-    return this.menuService.update(BigInt(id), dto);
+    return this.menuService.update((id), dto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Delete menu' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.menuService.remove(BigInt(id));
+    return this.menuService.remove((id));
   }
 }

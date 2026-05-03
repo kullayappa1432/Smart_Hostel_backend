@@ -36,20 +36,20 @@ export class HostelsController {
   @Public()
   @ApiOperation({ summary: 'Get hostel with rooms (block/floor grouped)' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.hostelsService.findOne(BigInt(id));
+    return this.hostelsService.findOne((id));
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Update hostel' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateHostelDto) {
-    return this.hostelsService.update(BigInt(id), dto);
+    return this.hostelsService.update((id), dto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Delete hostel' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.hostelsService.remove(BigInt(id));
+    return this.hostelsService.remove((id));
   }
 }

@@ -64,20 +64,20 @@ export class StudentsController {
   @Roles(Role.ADMIN, Role.ATTENDER, Role.WARDEN)
   @ApiOperation({ summary: '[ADMIN/ATTENDER] Get student by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.studentsService.findOne(BigInt(id));
+    return this.studentsService.findOne((id));
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.ATTENDER, Role.WARDEN)
   @ApiOperation({ summary: '[ADMIN/ATTENDER] Update student details' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStudentDto) {
-    return this.studentsService.update(BigInt(id), dto);
+    return this.studentsService.update((id), dto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN only] Delete a student record' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.studentsService.remove(BigInt(id));
+    return this.studentsService.remove((id));
   }
 }

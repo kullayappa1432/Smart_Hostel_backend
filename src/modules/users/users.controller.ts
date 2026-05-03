@@ -49,7 +49,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Get user by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(BigInt(id));
+    return this.usersService.findOne((id));
   }
 
   @Post('admin')
@@ -67,13 +67,13 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserStatusDto,
   ) {
-    return this.usersService.updateStatus(BigInt(id), dto);
+    return this.usersService.updateStatus((id), dto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Delete a user' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.remove(BigInt(id));
+    return this.usersService.remove((id));
   }
 }

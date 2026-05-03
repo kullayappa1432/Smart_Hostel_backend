@@ -95,7 +95,7 @@ export class FeesService {
     });
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const fee = await this.prisma.fee.findUnique({
       where: { id },
       include: {
@@ -123,7 +123,7 @@ export class FeesService {
     return fee;
   }
 
-  async update(id: bigint, updateFeeDto: UpdateFeeDto) {
+  async update(id: number, updateFeeDto: UpdateFeeDto) {
     const fee = await this.findOne(id);
 
     // Recalculate total if any fee component is updated
@@ -202,13 +202,13 @@ export class FeesService {
     });
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     await this.findOne(id);
     return this.prisma.fee.delete({ where: { id } });
   }
 
   // Get pending fees for a student
-  async getPendingFees(studentId: bigint) {
+  async getPendingFees(studentId: number) {
     return this.prisma.fee.findMany({
       where: {
         student_id: studentId,
@@ -224,7 +224,7 @@ export class FeesService {
   }
 
   // Get fee summary for a student
-  async getFeeSummary(studentId: bigint) {
+  async getFeeSummary(studentId: number) {
     const fees = await this.prisma.fee.findMany({
       where: { student_id: studentId },
     });

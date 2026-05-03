@@ -19,7 +19,7 @@ export class HostelsService {
     return { message: 'Hostels fetched', data: hostels };
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const hostel = await this.prisma.hostel.findUnique({
       where: { id },
       include: {
@@ -33,7 +33,7 @@ export class HostelsService {
     return { message: 'Hostel fetched', data: hostel };
   }
 
-  async update(id: bigint, dto: UpdateHostelDto) {
+  async update(id: number, dto: UpdateHostelDto) {
     const hostel = await this.prisma.hostel.findUnique({ where: { id } });
     if (!hostel) throw new NotFoundException('Hostel not found');
 
@@ -41,7 +41,7 @@ export class HostelsService {
     return { message: 'Hostel updated', data: updated };
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const hostel = await this.prisma.hostel.findUnique({ where: { id } });
     if (!hostel) throw new NotFoundException('Hostel not found');
 

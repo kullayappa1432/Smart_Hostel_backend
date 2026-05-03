@@ -71,7 +71,7 @@ export class VisitorsService {
     });
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const visitor = await this.prisma.visitor.findUnique({
       where: { id },
       include: {
@@ -107,7 +107,7 @@ export class VisitorsService {
     return visitor;
   }
 
-  async checkOut(id: bigint, checkOutVisitorDto: CheckOutVisitorDto) {
+  async checkOut(id: number, checkOutVisitorDto: CheckOutVisitorDto) {
     await this.findOne(id);
 
     return this.prisma.visitor.update({
@@ -136,7 +136,7 @@ export class VisitorsService {
     });
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     await this.findOne(id);
     return this.prisma.visitor.delete({ where: { id } });
   }
@@ -173,7 +173,7 @@ export class VisitorsService {
   }
 
   // Get visitor history for a student
-  async getVisitorHistory(studentId: bigint) {
+  async getVisitorHistory(studentId: number) {
     return this.prisma.visitor.findMany({
       where: { student_id: studentId },
       include: {

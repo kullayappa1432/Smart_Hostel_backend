@@ -36,20 +36,20 @@ export class DepartmentsController {
   @Public()
   @ApiOperation({ summary: 'Get department by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.departmentsService.findOne(BigInt(id));
+    return this.departmentsService.findOne((id));
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Update department' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateDepartmentDto) {
-    return this.departmentsService.update(BigInt(id), dto);
+    return this.departmentsService.update((id), dto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Delete department' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.departmentsService.remove(BigInt(id));
+    return this.departmentsService.remove((id));
   }
 }

@@ -4,8 +4,9 @@ import { PaymentStatus } from '@prisma/client';
 
 export class CreateFeeDto {
   @IsNotEmpty()
-  @Type(() => BigInt)
-  student_id: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id: number;
 
   @IsNotEmpty()
   @IsNumber()
@@ -122,8 +123,9 @@ export class UpdateFeeDto {
 
 export class GetFeesQueryDto {
   @IsOptional()
-  @Type(() => BigInt)
-  student_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id?: number;
 
   @IsOptional()
   @IsNumber()

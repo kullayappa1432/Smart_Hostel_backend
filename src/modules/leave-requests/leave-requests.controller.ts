@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { LeaveRequestsService } from './leave-requests.service';
 import {
@@ -59,33 +60,33 @@ export class LeaveRequestsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.leaveRequestsService.findOne(BigInt(id));
+  findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
+    return this.leaveRequestsService.findOne(id);
   }
 
   @Patch(':id')
   @Roles('STUDENT', 'ADMIN')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateLeaveRequestDto: UpdateLeaveRequestDto,
     @CurrentUser() user: any,
   ) {
-    return this.leaveRequestsService.update(BigInt(id), updateLeaveRequestDto);
+    return this.leaveRequestsService.update(id, updateLeaveRequestDto);
   }
 
   @Patch(':id/approve')
   @Roles('ADMIN', 'WARDEN')
   approve(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() approveLeaveDto: ApproveLeaveDto,
     @CurrentUser() user: any,
   ) {
-    return this.leaveRequestsService.approve(BigInt(id), approveLeaveDto, user.id);
+    return this.leaveRequestsService.approve(id, approveLeaveDto, user.id);
   }
 
   @Delete(':id')
   @Roles('STUDENT', 'ADMIN')
-  remove(@Param('id') id: string) {
-    return this.leaveRequestsService.remove(BigInt(id));
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.leaveRequestsService.remove(id);
   }
 }

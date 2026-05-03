@@ -43,20 +43,20 @@ export class SemestersController {
   @Public()
   @ApiOperation({ summary: 'Get semester by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.semestersService.findOne(BigInt(id));
+    return this.semestersService.findOne((id));
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Update semester' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateSemesterDto) {
-    return this.semestersService.update(BigInt(id), dto);
+    return this.semestersService.update((id), dto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Delete semester' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.semestersService.remove(BigInt(id));
+    return this.semestersService.remove((id));
   }
 }

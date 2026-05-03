@@ -15,8 +15,8 @@ export class AllocationsService {
   // ─── Admin: Allocate any student to any room ──────────────────────────────────
 
   async adminAllocate(dto: CreateAllocationDto) {
-    const studentId = BigInt(dto.student_id);
-    const roomId = BigInt(dto.room_id);
+    const studentId = dto.student_id;
+    const roomId = dto.room_id;
 
     await this.validateAllocation(studentId, roomId);
 
@@ -47,7 +47,7 @@ export class AllocationsService {
 
   // ─── Student: Self-allocate ───────────────────────────────────────────────────
 
-  async studentSelfAllocate(userId: bigint, dto: StudentSelfAllocateDto) {
+  async studentSelfAllocate(userId: number, dto: StudentSelfAllocateDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { student: true },
@@ -56,7 +56,7 @@ export class AllocationsService {
     if (!user?.student_id) throw new ForbiddenException('No student profile linked to this account');
 
     const studentId = user.student_id;
-    const roomId = BigInt(dto.room_id);
+    const roomId = dto.room_id;
 
     await this.validateAllocation(studentId, roomId);
 
@@ -108,7 +108,7 @@ export class AllocationsService {
 
   // ─── Get my allocation (student) ─────────────────────────────────────────────
 
-  async getMyAllocation(userId: bigint) {
+  async getMyAllocation(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user?.student_id) {
       return { message: 'No student profile found', data: null };
@@ -125,7 +125,7 @@ export class AllocationsService {
 
   // ─── Deallocate ───────────────────────────────────────────────────────────────
 
-  async deallocate(id: bigint) {
+  async deallocate(id: number) {
     const allocation = await this.prisma.allocation.findUnique({ where: { id } });
     if (!allocation) throw new NotFoundException('Allocation not found');
 
@@ -146,7 +146,7 @@ export class AllocationsService {
 
   // ─── Validation Logic ─────────────────────────────────────────────────────────
 
-  private async validateAllocation(studentId: bigint, roomId: bigint) {
+  private async validateAllocation(studentId: number, roomId: number) {
     // Check student exists
     const student = await this.prisma.student.findUnique({
       where: { id: studentId },

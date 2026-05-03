@@ -48,30 +48,30 @@ export class FeesController {
 
   @Get('pending/:studentId')
   @Roles('ADMIN', 'ACCOUNTANT', 'WARDEN')
-  getPendingFees(@Param('studentId') studentId: string) {
-    return this.feesService.getPendingFees(BigInt(studentId));
+  getPendingFees(@Param('studentId', ParseIntPipe) studentId: number) {
+    return this.feesService.getPendingFees(studentId);
   }
 
   @Get('summary/:studentId')
   @Roles('ADMIN', 'ACCOUNTANT', 'WARDEN')
-  getFeeSummary(@Param('studentId') studentId: string) {
-    return this.feesService.getFeeSummary(BigInt(studentId));
+  getFeeSummary(@Param('studentId', ParseIntPipe) studentId: number) {
+    return this.feesService.getFeeSummary(studentId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.feesService.findOne(BigInt(id));
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.feesService.findOne(id);
   }
 
   @Patch(':id')
   @Roles('ADMIN', 'ACCOUNTANT')
-  update(@Param('id') id: string, @Body() updateFeeDto: UpdateFeeDto) {
-    return this.feesService.update(BigInt(id), updateFeeDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateFeeDto: UpdateFeeDto) {
+    return this.feesService.update(id, updateFeeDto);
   }
 
   @Delete(':id')
   @Roles('ADMIN')
-  remove(@Param('id') id: string) {
-    return this.feesService.remove(BigInt(id));
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.feesService.remove(id);
   }
 }

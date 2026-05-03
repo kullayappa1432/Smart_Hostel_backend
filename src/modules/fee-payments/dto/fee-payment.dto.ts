@@ -4,12 +4,14 @@ import { PaymentMethod } from '@prisma/client';
 
 export class CreateFeePaymentDto {
   @IsNotEmpty()
-  @Type(() => BigInt)
-  fee_id: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  fee_id: number;
 
   @IsNotEmpty()
-  @Type(() => BigInt)
-  student_id: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id: number;
 
   @IsNotEmpty()
   @IsNumber()
@@ -43,12 +45,14 @@ export class CreateFeePaymentDto {
 
 export class GetFeePaymentsQueryDto {
   @IsOptional()
-  @Type(() => BigInt)
-  student_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id?: number;
 
   @IsOptional()
-  @Type(() => BigInt)
-  fee_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  fee_id?: number;
 
   @IsOptional()
   @IsEnum(PaymentMethod)

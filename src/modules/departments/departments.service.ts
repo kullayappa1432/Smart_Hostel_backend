@@ -23,13 +23,13 @@ export class DepartmentsService {
     return { message: 'Departments fetched', data: departments };
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const dept = await this.prisma.department.findUnique({ where: { id } });
     if (!dept) throw new NotFoundException('Department not found');
     return { message: 'Department fetched', data: dept };
   }
 
-  async update(id: bigint, dto: UpdateDepartmentDto) {
+  async update(id: number, dto: UpdateDepartmentDto) {
     const dept = await this.prisma.department.findUnique({ where: { id } });
     if (!dept) throw new NotFoundException('Department not found');
 
@@ -37,7 +37,7 @@ export class DepartmentsService {
     return { message: 'Department updated', data: updated };
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const dept = await this.prisma.department.findUnique({ where: { id } });
     if (!dept) throw new NotFoundException('Department not found');
 

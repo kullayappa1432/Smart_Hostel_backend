@@ -22,7 +22,7 @@ export class FeePaymentsService {
   }
 
   // ─── Create Razorpay Order ────────────────────────────────────────────────────
-  async createRazorpayOrder(feeId: bigint, userId: bigint) {
+  async createRazorpayOrder(feeId: number, userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const studentId = user?.student_id;
     if (!studentId) throw new BadRequestException('No student profile linked');
@@ -95,8 +95,8 @@ export class FeePaymentsService {
 
   // ─── Verify & Record Razorpay Payment ────────────────────────────────────────
   async verifyAndRecord(
-    feeId: bigint,
-    userId: bigint,
+    feeId: number,
+    userId: number,
     razorpay_order_id: string,
     razorpay_payment_id: string,
     razorpay_signature: string,
@@ -206,7 +206,7 @@ export class FeePaymentsService {
     });
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const payment = await this.prisma.feePayment.findUnique({
       where: { id },
       include: {
@@ -220,7 +220,7 @@ export class FeePaymentsService {
     return payment;
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const payment = await this.findOne(id);
     const fee = await this.prisma.fee.findUnique({ where: { id: payment.fee_id } });
 
@@ -241,7 +241,7 @@ export class FeePaymentsService {
   }
 
   // ─── Payment history for a student (by user id) ───────────────────────────────
-  async getPaymentHistory(userId: bigint) {
+  async getPaymentHistory(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const studentId = user?.student_id;
     if (!studentId) return [];

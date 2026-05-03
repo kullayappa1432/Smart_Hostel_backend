@@ -75,7 +75,7 @@ export class LeaveRequestsService {
     });
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const leaveRequest = await this.prisma.leaveRequest.findUnique({
       where: { id },
       include: {
@@ -108,7 +108,7 @@ export class LeaveRequestsService {
     return leaveRequest;
   }
 
-  async update(id: bigint, updateLeaveRequestDto: UpdateLeaveRequestDto) {
+  async update(id: number, updateLeaveRequestDto: UpdateLeaveRequestDto) {
     await this.findOne(id);
 
     const data: any = { ...updateLeaveRequestDto };
@@ -145,7 +145,7 @@ export class LeaveRequestsService {
     });
   }
 
-  async approve(id: bigint, approveLeaveDto: ApproveLeaveDto, approverId: bigint) {
+  async approve(id: number, approveLeaveDto: ApproveLeaveDto, approverId: number) {
     const leaveRequest = await this.findOne(id);
 
     if (leaveRequest.status !== 'PENDING') {
@@ -181,7 +181,7 @@ export class LeaveRequestsService {
     });
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     await this.findOne(id);
     return this.prisma.leaveRequest.delete({ where: { id } });
   }

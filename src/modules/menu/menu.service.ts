@@ -40,7 +40,7 @@ export class MenuService {
     return { message: "Today's menu fetched", data: menu };
   }
 
-  async update(id: bigint, dto: UpdateMenuDto) {
+  async update(id: number, dto: UpdateMenuDto) {
     const menu = await this.prisma.menu.findUnique({ where: { id } });
     if (!menu) throw new NotFoundException('Menu not found');
 
@@ -51,7 +51,7 @@ export class MenuService {
     return { message: 'Menu updated', data: updated };
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const menu = await this.prisma.menu.findUnique({ where: { id } });
     if (!menu) throw new NotFoundException('Menu not found');
 

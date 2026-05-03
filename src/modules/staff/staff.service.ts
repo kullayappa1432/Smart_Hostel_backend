@@ -19,13 +19,13 @@ export class StaffService {
     return { message: 'Staff fetched', data: staff };
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const staff = await this.prisma.staff.findUnique({ where: { id } });
     if (!staff) throw new NotFoundException('Staff not found');
     return { message: 'Staff fetched', data: staff };
   }
 
-  async update(id: bigint, dto: UpdateStaffDto) {
+  async update(id: number, dto: UpdateStaffDto) {
     const staff = await this.prisma.staff.findUnique({ where: { id } });
     if (!staff) throw new NotFoundException('Staff not found');
 
@@ -33,7 +33,7 @@ export class StaffService {
     return { message: 'Staff updated', data: updated };
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const staff = await this.prisma.staff.findUnique({ where: { id } });
     if (!staff) throw new NotFoundException('Staff not found');
 

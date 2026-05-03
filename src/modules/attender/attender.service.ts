@@ -76,7 +76,7 @@ export class AttenderService {
   async getAttenderById(id: number) {
     const attender = await this.prisma.staff.findFirst({
       where: {
-        id: BigInt(id),
+        id,
         role: 'ATTENDER',
       },
     });
@@ -96,7 +96,7 @@ export class AttenderService {
     // Check if attender exists
     const existingAttender = await this.prisma.staff.findFirst({
       where: {
-        id: BigInt(id),
+        id,
         role: 'ATTENDER',
       },
     });
@@ -117,7 +117,7 @@ export class AttenderService {
     }
 
     const updatedAttender = await this.prisma.staff.update({
-      where: { id: BigInt(id) },
+      where: { id },
       data: {
         ...(dto.name && { name: dto.name }),
         ...(dto.phone && { phone: dto.phone }),
@@ -138,7 +138,7 @@ export class AttenderService {
     // Check if attender exists
     const existingAttender = await this.prisma.staff.findFirst({
       where: {
-        id: BigInt(id),
+        id,
         role: 'ATTENDER',
       },
     });
@@ -148,7 +148,7 @@ export class AttenderService {
     }
 
     await this.prisma.staff.delete({
-      where: { id: BigInt(id) },
+      where: { id },
     });
 
     return {
@@ -160,7 +160,7 @@ export class AttenderService {
   async toggleAttenderStatus(id: number) {
     const attender = await this.prisma.staff.findFirst({
       where: {
-        id: BigInt(id),
+        id,
         role: 'ATTENDER',
       },
     });
@@ -170,7 +170,7 @@ export class AttenderService {
     }
 
     const updatedAttender = await this.prisma.staff.update({
-      where: { id: BigInt(id) },
+      where: { id },
       data: { is_active: !attender.is_active },
     });
 
@@ -235,7 +235,7 @@ export class AttenderService {
     // We store attender expenses as FeePayments with a special remark
     // This reuses the existing FeePayment model without schema changes
     const student = await this.prisma.student.findUnique({
-      where: { id: BigInt(dto.student_id) },
+      where: { id: dto.student_id },
     });
     if (!student) throw new Error('Student not found');
 
@@ -247,7 +247,7 @@ export class AttenderService {
     let fee = await this.prisma.fee.findUnique({
       where: {
         student_id_month_year: {
-          student_id: BigInt(dto.student_id),
+          student_id: dto.student_id,
           month,
           year,
         },
@@ -257,7 +257,7 @@ export class AttenderService {
     if (!fee) {
       fee = await this.prisma.fee.create({
         data: {
-          student_id: BigInt(dto.student_id),
+          student_id: dto.student_id,
           month,
           year,
           room_rent: 0,
@@ -294,7 +294,7 @@ export class AttenderService {
     const record = await this.prisma.feePayment.create({
       data: {
         fee_id: fee.id,
-        student_id: BigInt(dto.student_id),
+        student_id: dto.student_id,
         amount: dto.amount,
         payment_method: 'CASH',
         paid_on: expenseDate,
@@ -312,7 +312,7 @@ export class AttenderService {
   async getExpenses(query: GetExpensesQueryDto) {
     const where: any = {};
 
-    if (query.student_id) where.student_id = BigInt(query.student_id);
+    if (query.student_id) where.student_id = query.student_id;
 
     if (query.expense_type) {
       where.remarks = { contains: query.expense_type };

@@ -33,18 +33,18 @@ export class StaffController {
   @Get(':id')
   @ApiOperation({ summary: '[ADMIN] Get staff by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.staffService.findOne(BigInt(id));
+    return this.staffService.findOne((id));
   }
 
   @Patch(':id')
   @ApiOperation({ summary: '[ADMIN] Update staff' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStaffDto) {
-    return this.staffService.update(BigInt(id), dto);
+    return this.staffService.update((id), dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: '[ADMIN] Delete staff' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.staffService.remove(BigInt(id));
+    return this.staffService.remove((id));
   }
 }

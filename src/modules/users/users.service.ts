@@ -44,7 +44,7 @@ export class UsersService {
     };
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -79,7 +79,7 @@ export class UsersService {
     return { message: 'Admin created successfully', data: safeUser };
   }
 
-  async updateStatus(id: bigint, dto: UpdateUserStatusDto) {
+  async updateStatus(id: number, dto: UpdateUserStatusDto) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -94,7 +94,7 @@ export class UsersService {
     };
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
 

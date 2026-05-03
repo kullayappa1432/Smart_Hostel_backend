@@ -7,12 +7,12 @@ export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateNotificationDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: BigInt(dto.user_id) } });
+    const user = await this.prisma.user.findUnique({ where: { id: dto.user_id } });
     if (!user) throw new NotFoundException('User not found');
 
     const notification = await this.prisma.notification.create({
       data: {
-        user_id: BigInt(dto.user_id),
+        user_id: dto.user_id,
         title: dto.title,
         message: dto.message,
       },
@@ -41,7 +41,7 @@ export class NotificationsService {
     };
   }
 
-  async getMyNotifications(userId: bigint) {
+  async getMyNotifications(userId: number) {
     const notifications = await this.prisma.notification.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
@@ -55,7 +55,7 @@ export class NotificationsService {
     };
   }
 
-  async markAsRead(id: bigint, userId: bigint) {
+  async markAsRead(id: number, userId: number) {
     const notification = await this.prisma.notification.findFirst({
       where: { id, user_id: userId },
     });
@@ -69,7 +69,7 @@ export class NotificationsService {
     return { message: 'Notification marked as read', data: updated };
   }
 
-  async markAllAsRead(userId: bigint) {
+  async markAllAsRead(userId: number) {
     await this.prisma.notification.updateMany({
       where: { user_id: userId, is_read: false },
       data: { is_read: true },

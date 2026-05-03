@@ -52,6 +52,6 @@ export class AllocationsController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: '[ADMIN] Deallocate a room (frees up the room)' })
   deallocate(@Param('id', ParseIntPipe) id: number) {
-    return this.allocationsService.deallocate(BigInt(id));
+    return this.allocationsService.deallocate(id);
   }
 }

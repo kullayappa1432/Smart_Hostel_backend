@@ -1,11 +1,12 @@
-import { IsNotEmpty, IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsEnum, IsDateString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { LeaveStatus } from '@prisma/client';
 
 export class CreateLeaveRequestDto {
   @IsNotEmpty()
-  @Type(() => BigInt)
-  student_id: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id: number;
 
   @IsNotEmpty()
   @IsDateString()
@@ -54,8 +55,9 @@ export class ApproveLeaveDto {
 
 export class GetLeaveRequestsQueryDto {
   @IsOptional()
-  @Type(() => BigInt)
-  student_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id?: number;
 
   @IsOptional()
   @IsEnum(LeaveStatus)

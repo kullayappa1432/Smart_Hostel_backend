@@ -10,7 +10,7 @@ import { CreateComplaintDto, UpdateComplaintStatusDto } from './dto/complaint.dt
 export class ComplaintsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: bigint, dto: CreateComplaintDto) {
+  async create(userId: number, dto: CreateComplaintDto) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user?.student_id) throw new ForbiddenException('No student profile linked');
 
@@ -56,7 +56,7 @@ export class ComplaintsService {
     };
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const complaint = await this.prisma.complaint.findUnique({
       where: { id },
       include: { student: { include: { department: true } } },
@@ -65,7 +65,7 @@ export class ComplaintsService {
     return { message: 'Complaint fetched', data: complaint };
   }
 
-  async getMyComplaints(userId: bigint) {
+  async getMyComplaints(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user?.student_id) throw new ForbiddenException('No student profile linked');
 
@@ -77,7 +77,7 @@ export class ComplaintsService {
     return { message: 'My complaints fetched', data: complaints };
   }
 
-  async updateStatus(id: bigint, dto: UpdateComplaintStatusDto) {
+  async updateStatus(id: number, dto: UpdateComplaintStatusDto) {
     const complaint = await this.prisma.complaint.findUnique({ where: { id } });
     if (!complaint) throw new NotFoundException('Complaint not found');
 

@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { ComplaintStatus, ComplaintType, ComplaintPriority } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, IsNumber } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class CreateComplaintDto {
@@ -25,8 +25,9 @@ export class CreateComplaintDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Transform(({ value }) => (value ? BigInt(value) : undefined))
-  room_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  room_id?: number;
 
   @ApiPropertyOptional({ example: 'https://storage.example.com/complaint-photo.jpg' })
   @IsOptional()

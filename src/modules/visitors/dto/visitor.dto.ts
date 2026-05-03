@@ -1,14 +1,16 @@
-import { IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsDateString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateVisitorDto {
   @IsNotEmpty()
-  @Type(() => BigInt)
-  student_id: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id: number;
 
   @IsOptional()
-  @Type(() => BigInt)
-  room_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  room_id?: number;
 
   @IsNotEmpty()
   @IsString()
@@ -43,12 +45,14 @@ export class CheckOutVisitorDto {
 
 export class GetVisitorsQueryDto {
   @IsOptional()
-  @Type(() => BigInt)
-  student_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  student_id?: number;
 
   @IsOptional()
-  @Type(() => BigInt)
-  room_id?: bigint;
+  @Type(() => Number)
+  @IsNumber()
+  room_id?: number;
 
   @IsOptional()
   checked_out?: string; // 'true' or 'false'

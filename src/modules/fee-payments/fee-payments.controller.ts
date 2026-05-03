@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FeePaymentsService } from './fee-payments.service';
 import { CreateFeePaymentDto, GetFeePaymentsQueryDto } from './dto/fee-payment.dto';
@@ -23,8 +24,8 @@ export class FeePaymentsController {
   // ─── Razorpay: Create order for a pending fee ─────────────────────────────
   @Post('create-order/:feeId')
   @Roles('STUDENT', 'ADMIN')
-  createOrder(@Param('feeId') feeId: string, @CurrentUser() user: any) {
-    return this.feePaymentsService.createRazorpayOrder(BigInt(feeId), user.id);
+  createOrder(@Param('feeId', ParseIntPipe) feeId: number, @CurrentUser() user: any) {
+    return this.feePaymentsService.createRazorpayOrder(feeId, user.id);
   }
 
   // ─── Razorpay: Verify payment and record ──────────────────────────────────
@@ -32,7 +33,7 @@ export class FeePaymentsController {
   @Roles('STUDENT', 'ADMIN')
   verifyPayment(
     @Body() body: {
-      fee_id: string;
+      fee_id: number;
       razorpay_order_id: string;
       razorpay_payment_id: string;
       razorpay_signature: string;
@@ -40,7 +41,7 @@ export class FeePaymentsController {
     @CurrentUser() user: any,
   ) {
     return this.feePaymentsService.verifyAndRecord(
-      BigInt(body.fee_id),
+      body.fee_id,
       user.id,
       body.razorpay_order_id,
       body.razorpay_payment_id,
@@ -68,18 +69,18 @@ export class FeePaymentsController {
 
   @Get('history/:studentId')
   @Roles('ADMIN', 'ACCOUNTANT', 'WARDEN')
-  getPaymentHistory(@Param('studentId') studentId: string) {
-    return this.feePaymentsService.getPaymentHistory(BigInt(studentId));
+  getPaymentHistory(@Param('studentId', ParseIntPipe) studentId: number) {
+    return this.feePaymentsService.getPaymentHistory(studentId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.feePaymentsService.findOne(BigInt(id));
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.feePaymentsService.findOne(id);
   }
 
   @Delete(':id')
   @Roles('ADMIN', 'ACCOUNTANT')
-  remove(@Param('id') id: string) {
-    return this.feePaymentsService.remove(BigInt(id));
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.feePaymentsService.remove(id);
   }
 }

@@ -34,13 +34,13 @@ export class SemestersService {
     return { message: 'Active semester fetched', data: semester };
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const semester = await this.prisma.semester.findUnique({ where: { id } });
     if (!semester) throw new NotFoundException('Semester not found');
     return { message: 'Semester fetched', data: semester };
   }
 
-  async update(id: bigint, dto: UpdateSemesterDto) {
+  async update(id: number, dto: UpdateSemesterDto) {
     const semester = await this.prisma.semester.findUnique({ where: { id } });
     if (!semester) throw new NotFoundException('Semester not found');
 
@@ -53,7 +53,7 @@ export class SemestersService {
     return { message: 'Semester updated', data: updated };
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const semester = await this.prisma.semester.findUnique({ where: { id } });
     if (!semester) throw new NotFoundException('Semester not found');
 

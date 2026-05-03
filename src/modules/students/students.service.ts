@@ -22,8 +22,8 @@ export class StudentsService {
         name: dto.name,
         gender: dto.gender,
         course: dto.course,
-        department_id: BigInt(dto.department_id),
-        semester_id: BigInt(dto.semester_id),
+        department_id: dto.department_id,
+        semester_id: dto.semester_id,
       },
       include: { department: true, semester: true },
     });
@@ -34,8 +34,8 @@ export class StudentsService {
   async findAll(page = 1, limit = 10, departmentId?: number, semesterId?: number) {
     const skip = (page - 1) * limit;
     const where: any = {};
-    if (departmentId) where.department_id = BigInt(departmentId);
-    if (semesterId) where.semester_id = BigInt(semesterId);
+    if (departmentId) where.department_id = departmentId;
+    if (semesterId) where.semester_id = semesterId;
 
     const [students, total] = await Promise.all([
       this.prisma.student.findMany({
@@ -59,7 +59,7 @@ export class StudentsService {
     };
   }
 
-  async findOne(id: bigint) {
+  async findOne(id: number) {
     const student = await this.prisma.student.findUnique({
       where: { id },
       include: {
@@ -87,7 +87,7 @@ export class StudentsService {
     return { message: 'Student fetched', data: student };
   }
 
-  async update(id: bigint, dto: UpdateStudentDto) {
+  async update(id: number, dto: UpdateStudentDto) {
     const student = await this.prisma.student.findUnique({ where: { id } });
     if (!student) throw new NotFoundException('Student not found');
 
@@ -97,8 +97,8 @@ export class StudentsService {
         ...(dto.name && { name: dto.name }),
         ...(dto.gender && { gender: dto.gender }),
         ...(dto.course && { course: dto.course }),
-        ...(dto.department_id && { department_id: BigInt(dto.department_id) }),
-        ...(dto.semester_id && { semester_id: BigInt(dto.semester_id) }),
+        ...(dto.department_id && { department_id: dto.department_id }),
+        ...(dto.semester_id && { semester_id: dto.semester_id }),
       },
       include: { department: true, semester: true },
     });
@@ -106,7 +106,7 @@ export class StudentsService {
     return { message: 'Student updated successfully', data: updated };
   }
 
-  async remove(id: bigint) {
+  async remove(id: number) {
     const student = await this.prisma.student.findUnique({ where: { id } });
     if (!student) throw new NotFoundException('Student not found');
 

@@ -52,7 +52,7 @@ export class ComplaintsController {
   @Roles(Role.ADMIN, Role.WARDEN, Role.ATTENDER)
   @ApiOperation({ summary: '[ADMIN/WARDEN/ATTENDER] Get complaint by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.complaintsService.findOne(BigInt(id));
+    return this.complaintsService.findOne(id);
   }
 
   @Patch(':id/status')
@@ -62,6 +62,6 @@ export class ComplaintsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateComplaintStatusDto,
   ) {
-    return this.complaintsService.updateStatus(BigInt(id), dto);
+    return this.complaintsService.updateStatus(id, dto);
   }
 }
