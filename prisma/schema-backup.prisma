@@ -1,0 +1,319 @@
+// Hostel Management System - Prisma Schema v2.0
+// Database: MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum HostelGenderType {
+  BOYS
+  GIRLS
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum ComplaintType {
+  RAGGING
+  ROOM
+  BATHROOM
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum StaffRole {
+  WARDEN
+  CARETAKER
+}
+
+// ─────────────────────────────────────────────
+// 1. DEPARTMENTS
+// ─────────────────────────────────────────────
+
+model Department {
+  id              BigInt    @id @default(autoincrement())
+  department_name String    @db.VarChar(100)
+  department_code String    @unique @db.VarChar(20)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  students        Student[]
+  rooms           Room[]
+
+  @@map("departments")
+}
+
+// ─────────────────────────────────────────────
+// 2. SEMESTERS
+// ─────────────────────────────────────────────
+
+model Semester {
+  id               BigInt    @id @default(autoincrement())
+  semester_number  Int
+  academic_year    String    @db.VarChar(20)
+  is_active        Boolean   @default(false)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  students         Student[]
+  rooms            Room[]
+  payments         Payment[]
+  attendances      Attendance[]
+
+  @@unique([semester_number, academic_year])
+  @@map("semesters")
+}
+
+// ─────────────────────────────────────────────
+// 3. STUDENTS
+// ─────────────────────────────────────────────
+
+model Student {
+  id                 BigInt     @id @default(autoincrement())
+  hall_ticket_number String     @unique @db.VarChar(50)
+  name               String     @db.VarChar(150)
+  gender             Gender
+  course             String     @db.VarChar(100)
+  department_id      BigInt
+  semester_id        BigInt
+  created_at         DateTime   @default(now())
+  updated_at         DateTime   @updatedAt
+
+  department         Department  @relation(fields: [department_id], references: [id])
+  semester           Semester    @relation(fields: [semester_id], references: [id])
+  user               User?
+  allocations        Allocation[]
+  payments           Payment[]
+  attendances        Attendance[]
+  complaints         Complaint[]
+
+  @@map("students")
+}
+
+// ─────────────────────────────────────────────
+// 4. USERS (Auth)
+// ─────────────────────────────────────────────
+
+model User {
+  id                     BigInt    @id @default(autoincrement())
+  uuid                   String    @unique @default(uuid()) @db.Char(36)
+  role                   Role      @default(STUDENT)
+  full_name              String    @db.VarChar(150)
+  email                  String    @unique @db.VarChar(255)
+  phone                  String?   @db.VarChar(20)
+  password_hash          String    @db.VarChar(255)
+  student_id             BigInt?   @unique
+  is_active              Boolean   @default(true)
+  last_login_at          DateTime?
+  reset_token_hash       String?   @db.VarChar(255)
+  reset_token_expires_at DateTime?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  student                Student?      @relation(fields: [student_id], references: [id])
+  notifications          Notification[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// 5. HOSTELS
+// ─────────────────────────────────────────────
+
+model Hostel {
+  id           BigInt           @id @default(autoincrement())
+  hostel_name  String           @db.VarChar(100)
+  gender_type  HostelGenderType
+  created_at   DateTime         @default(now())
+  updated_at   DateTime         @updatedAt
+
+  rooms        Room[]
+
+  @@map("hostels")
+}
+
+// ─────────────────────────────────────────────
+// 6. ROOMS
+// ─────────────────────────────────────────────
+
+model Room {
+  id             BigInt     @id @default(autoincrement())
+  room_number    String     @db.VarChar(20)
+  hostel_id      BigInt
+  block_name     String     @db.VarChar(10)
+  floor_number   Int
+  department_id  BigInt
+  semester_id    BigInt
+  capacity       Int        @default(4)
+  occupied_count Int        @default(0)
+  available      Boolean    @default(true)
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  hostel         Hostel      @relation(fields: [hostel_id], references: [id])
+  department     Department  @relation(fields: [department_id], references: [id])
+  semester       Semester    @relation(fields: [semester_id], references: [id])
+  allocations    Allocation[]
+
+  @@unique([hostel_id, room_number])
+  @@map("rooms")
+}
+
+// ─────────────────────────────────────────────
+// 7. ALLOCATIONS
+// ─────────────────────────────────────────────
+
+model Allocation {
+  id              BigInt   @id @default(autoincrement())
+  student_id      BigInt   @unique
+  room_id         BigInt
+  allocated_date  DateTime @default(now())
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  student         Student  @relation(fields: [student_id], references: [id])
+  room            Room     @relation(fields: [room_id], references: [id])
+
+  @@map("allocations")
+}
+
+// ─────────────────────────────────────────────
+// 8. PAYMENTS
+// ─────────────────────────────────────────────
+
+model Payment {
+  id                   BigInt        @id @default(autoincrement())
+  student_id           BigInt
+  semester_id          BigInt
+  amount               Decimal       @db.Decimal(10, 2)
+  status               PaymentStatus @default(PENDING)
+  razorpay_order_id    String?       @db.VarChar(100)
+  razorpay_payment_id  String?       @db.VarChar(100)
+  payment_date         DateTime?
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
+
+  student              Student   @relation(fields: [student_id], references: [id])
+  semester             Semester  @relation(fields: [semester_id], references: [id])
+
+  @@unique([student_id, semester_id])
+  @@map("payments")
+}
+
+// ─────────────────────────────────────────────
+// 9. ATTENDANCE
+// ─────────────────────────────────────────────
+
+model Attendance {
+  id          BigInt           @id @default(autoincrement())
+  student_id  BigInt
+  semester_id BigInt
+  date        DateTime         @db.Date
+  status      AttendanceStatus
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  student     Student   @relation(fields: [student_id], references: [id])
+  semester    Semester  @relation(fields: [semester_id], references: [id])
+
+  @@unique([student_id, date])
+  @@map("attendances")
+}
+
+// ─────────────────────────────────────────────
+// 10. COMPLAINTS
+// ─────────────────────────────────────────────
+
+model Complaint {
+  id          BigInt          @id @default(autoincrement())
+  student_id  BigInt
+  type        ComplaintType
+  message     String          @db.Text
+  file_url    String?         @db.Text
+  status      ComplaintStatus @default(OPEN)
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+
+  student     Student @relation(fields: [student_id], references: [id])
+
+  @@map("complaints")
+}
+
+// ─────────────────────────────────────────────
+// 11. MENU
+// ─────────────────────────────────────────────
+
+model Menu {
+  id         BigInt   @id @default(autoincrement())
+  date       DateTime @unique @db.Date
+  breakfast  String   @db.Text
+  lunch      String   @db.Text
+  dinner     String   @db.Text
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("menus")
+}
+
+// ─────────────────────────────────────────────
+// 12. STAFF
+// ─────────────────────────────────────────────
+
+model Staff {
+  id         BigInt    @id @default(autoincrement())
+  name       String    @db.VarChar(150)
+  role       StaffRole
+  phone      String    @db.VarChar(20)
+  email      String    @unique @db.VarChar(255)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("staff")
+}
+
+// ─────────────────────────────────────────────
+// 13. NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model Notification {
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt
+  title      String   @db.VarChar(255)
+  message    String   @db.Text
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
+}

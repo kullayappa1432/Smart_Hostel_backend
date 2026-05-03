@@ -1,0 +1,560 @@
+// Hostel Management System - Prisma Schema v3.0
+// Database: MySQL
+// Enhanced with Fees, Payments, Leave Requests, Visitors
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  STUDENT
+  WARDEN
+  ACCOUNTANT
+  ATTENDER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum HostelGenderType {
+  BOYS
+  GIRLS
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  NET_BANKING
+  CHEQUE
+  RAZORPAY
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+}
+
+enum ComplaintType {
+  RAGGING
+  ROOM
+  BATHROOM
+  FOOD
+  MAINTENANCE
+  OTHER
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ComplaintPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum RoomType {
+  STANDARD
+  DELUXE
+  AC
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  RESERVED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  GRADUATED
+}
+
+// ─────────────────────────────────────────────
+// 1. DEPARTMENTS
+// ─────────────────────────────────────────────
+
+model Department {
+  id              BigInt    @id @default(autoincrement())
+  department_name String    @db.VarChar(100)
+  department_code String    @unique @db.VarChar(20)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  students        Student[]
+  rooms           Room[]
+
+  @@map("departments")
+}
+
+// ─────────────────────────────────────────────
+// 2. SEMESTERS
+// ─────────────────────────────────────────────
+
+model Semester {
+  id               BigInt    @id @default(autoincrement())
+  semester_number  Int
+  academic_year    String    @db.VarChar(20)
+  is_active        Boolean   @default(false)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  students         Student[]
+  rooms            Room[]
+  attendances      Attendance[]
+
+  @@unique([semester_number, academic_year])
+  @@map("semesters")
+}
+
+// ─────────────────────────────────────────────
+// 3. STUDENTS (Enhanced)
+// ─────────────────────────────────────────────
+
+model Student {
+  id                 BigInt         @id @default(autoincrement())
+  hall_ticket_number String         @unique @db.VarChar(50)
+  name               String         @db.VarChar(150)
+  gender             Gender
+  phone              String?        @db.VarChar(20)
+  email              String?        @db.VarChar(255)
+  
+  // Academic Info
+  college_name       String         @default("Your College Name") @db.VarChar(200)
+  course             String         @db.VarChar(100)
+  year               Int?           // 1, 2, 3, 4
+  department_id      BigInt
+  semester_id        BigInt
+  
+  // Parent/Guardian Info
+  parent_name        String?        @db.VarChar(150)
+  parent_phone       String?        @db.VarChar(20)
+  
+  // Address
+  address            String?        @db.Text
+  
+  // Status
+  status             StudentStatus  @default(ACTIVE)
+  join_date          DateTime       @default(now())
+  
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  // Relations
+  department         Department     @relation(fields: [department_id], references: [id])
+  semester           Semester       @relation(fields: [semester_id], references: [id])
+  user               User?
+  allocations        Allocation[]
+  fees               Fee[]
+  fee_payments       FeePayment[]
+  attendances        Attendance[]
+  complaints         Complaint[]
+  leave_requests     LeaveRequest[]
+  visitors           Visitor[]
+
+  @@index([status])
+  @@index([department_id])
+  @@index([semester_id])
+  @@map("students")
+}
+
+// ─────────────────────────────────────────────
+// 4. USERS (Auth - Enhanced)
+// ─────────────────────────────────────────────
+
+model User {
+  id                     BigInt    @id @default(autoincrement())
+  uuid                   String    @unique @default(uuid()) @db.Char(36)
+  role                   Role      @default(STUDENT)
+  full_name              String    @db.VarChar(150)
+  email                  String    @unique @db.VarChar(255)
+  phone                  String?   @db.VarChar(20)
+  password_hash          String    @db.VarChar(255)
+  student_id             BigInt?   @unique
+  is_active              Boolean   @default(true)
+  last_login_at          DateTime?
+  reset_token_hash       String?   @db.VarChar(255)
+  reset_token_expires_at DateTime?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  student                Student?       @relation(fields: [student_id], references: [id])
+  notifications          Notification[]
+  approved_leaves        LeaveRequest[]
+  resolved_complaints    Complaint[]    @relation("ComplaintResolver")
+
+  @@index([role])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// 5. HOSTELS
+// ─────────────────────────────────────────────
+
+model Hostel {
+  id           BigInt           @id @default(autoincrement())
+  hostel_name  String           @db.VarChar(100)
+  gender_type  HostelGenderType
+  address      String?          @db.Text
+  warden_name  String?          @db.VarChar(150)
+  warden_phone String?          @db.VarChar(20)
+  created_at   DateTime         @default(now())
+  updated_at   DateTime         @updatedAt
+
+  rooms        Room[]
+
+  @@map("hostels")
+}
+
+// ─────────────────────────────────────────────
+// 6. ROOMS (Enhanced)
+// ─────────────────────────────────────────────
+
+model Room {
+  id             BigInt     @id @default(autoincrement())
+  room_number    String     @db.VarChar(20)
+  hostel_id      BigInt
+  block_name     String     @db.VarChar(10)
+  floor_number   Int
+  department_id  BigInt
+  semester_id    BigInt
+  
+  // Room Details
+  room_type      RoomType   @default(STANDARD)
+  capacity       Int        @default(4)
+  occupied_count Int        @default(0)
+  monthly_rent   Decimal    @default(5000) @db.Decimal(10, 2)
+  
+  // Status
+  status         RoomStatus @default(AVAILABLE)
+  available      Boolean    @default(true)
+  
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  hostel         Hostel      @relation(fields: [hostel_id], references: [id])
+  department     Department  @relation(fields: [department_id], references: [id])
+  semester       Semester    @relation(fields: [semester_id], references: [id])
+  allocations    Allocation[]
+  complaints     Complaint[]
+  visitors       Visitor[]
+
+  @@unique([hostel_id, room_number])
+  @@index([status])
+  @@index([available])
+  @@map("rooms")
+}
+
+// ─────────────────────────────────────────────
+// 7. ALLOCATIONS (Enhanced)
+// ─────────────────────────────────────────────
+
+model Allocation {
+  id              BigInt    @id @default(autoincrement())
+  student_id      BigInt    @unique
+  room_id         BigInt
+  bed_no          Int?      // Bed number within the room
+  check_in_date   DateTime  @default(now())
+  check_out_date  DateTime?
+  is_current      Boolean   @default(true)
+  allocated_date  DateTime  @default(now())
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  student         Student   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  room            Room      @relation(fields: [room_id], references: [id])
+
+  @@index([is_current])
+  @@index([room_id])
+  @@map("allocations")
+}
+
+// ─────────────────────────────────────────────
+// 8. FEES (New)
+// ─────────────────────────────────────────────
+
+model Fee {
+  id                BigInt        @id @default(autoincrement())
+  student_id        BigInt
+  
+  // Period
+  month             Int           // 1-12
+  year              Int           // 2024, 2025, etc.
+  
+  // Fee Breakdown
+  room_rent         Decimal       @db.Decimal(10, 2)
+  food_fee          Decimal       @default(0) @db.Decimal(10, 2)
+  electricity_fee   Decimal       @default(0) @db.Decimal(10, 2)
+  water_fee         Decimal       @default(0) @db.Decimal(10, 2)
+  maintenance_fee   Decimal       @default(0) @db.Decimal(10, 2)
+  fine              Decimal       @default(0) @db.Decimal(10, 2)
+  previous_due      Decimal       @default(0) @db.Decimal(10, 2)
+  discount          Decimal       @default(0) @db.Decimal(10, 2)
+  
+  // Totals
+  total_amount      Decimal       @db.Decimal(10, 2)
+  paid_amount       Decimal       @default(0) @db.Decimal(10, 2)
+  balance_amount    Decimal       @db.Decimal(10, 2)
+  
+  // Status
+  payment_status    PaymentStatus @default(PENDING)
+  due_date          DateTime
+  
+  // Metadata
+  remarks           String?       @db.Text
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  student           Student       @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  payments          FeePayment[]
+
+  @@unique([student_id, month, year])
+  @@index([student_id])
+  @@index([payment_status])
+  @@index([due_date])
+  @@map("fees")
+}
+
+// ─────────────────────────────────────────────
+// 9. FEE PAYMENTS (New)
+// ─────────────────────────────────────────────
+
+model FeePayment {
+  id                BigInt        @id @default(autoincrement())
+  fee_id            BigInt
+  student_id        BigInt
+  
+  amount            Decimal       @db.Decimal(10, 2)
+  payment_method    PaymentMethod
+  transaction_id    String?       @db.VarChar(100)
+  
+  // Razorpay Integration
+  razorpay_order_id    String?    @db.VarChar(100)
+  razorpay_payment_id  String?    @db.VarChar(100)
+  razorpay_signature   String?    @db.VarChar(255)
+  
+  paid_on           DateTime      @default(now())
+  remarks           String?       @db.Text
+  
+  created_at        DateTime      @default(now())
+
+  fee               Fee           @relation(fields: [fee_id], references: [id], onDelete: Cascade)
+  student           Student       @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@index([student_id])
+  @@index([fee_id])
+  @@index([paid_on])
+  @@map("fee_payments")
+}
+
+// ─────────────────────────────────────────────
+// 10. ATTENDANCE (Enhanced)
+// ─────────────────────────────────────────────
+
+model Attendance {
+  id             BigInt           @id @default(autoincrement())
+  student_id     BigInt
+  semester_id    BigInt
+  date           DateTime         @db.Date
+  status         AttendanceStatus
+  check_in_time  DateTime?
+  check_out_time DateTime?
+  remarks        String?          @db.Text
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+
+  student        Student          @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  semester       Semester         @relation(fields: [semester_id], references: [id])
+
+  @@unique([student_id, date])
+  @@index([date])
+  @@index([status])
+  @@map("attendances")
+}
+
+// ─────────────────────────────────────────────
+// 11. COMPLAINTS (Enhanced)
+// ─────────────────────────────────────────────
+
+model Complaint {
+  id          BigInt             @id @default(autoincrement())
+  student_id  BigInt
+  room_id     BigInt?
+  
+  title       String             @db.VarChar(255)
+  type        ComplaintType
+  description String             @db.Text
+  priority    ComplaintPriority  @default(MEDIUM)
+  status      ComplaintStatus    @default(OPEN)
+  
+  file_url    String?            @db.Text
+  
+  // Resolution
+  resolved_by BigInt?
+  resolved_at DateTime?
+  resolution  String?            @db.Text
+  
+  created_at  DateTime           @default(now())
+  updated_at  DateTime           @updatedAt
+
+  student     Student            @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  room        Room?              @relation(fields: [room_id], references: [id])
+  resolver    User?              @relation("ComplaintResolver", fields: [resolved_by], references: [id])
+
+  @@index([student_id])
+  @@index([status])
+  @@index([priority])
+  @@map("complaints")
+}
+
+// ─────────────────────────────────────────────
+// 12. LEAVE REQUESTS (New)
+// ─────────────────────────────────────────────
+
+model LeaveRequest {
+  id          BigInt      @id @default(autoincrement())
+  student_id  BigInt
+  
+  from_date   DateTime    @db.Date
+  to_date     DateTime    @db.Date
+  reason      String      @db.Text
+  status      LeaveStatus @default(PENDING)
+  
+  // Approval
+  approved_by BigInt?
+  approved_at DateTime?
+  remarks     String?     @db.Text
+  
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+
+  student     Student     @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  approver    User?       @relation(fields: [approved_by], references: [id])
+
+  @@index([student_id])
+  @@index([status])
+  @@index([from_date])
+  @@map("leave_requests")
+}
+
+// ─────────────────────────────────────────────
+// 13. VISITORS (New)
+// ─────────────────────────────────────────────
+
+model Visitor {
+  id              BigInt    @id @default(autoincrement())
+  student_id      BigInt
+  room_id         BigInt?
+  
+  visitor_name    String    @db.VarChar(150)
+  relation        String    @db.VarChar(50) // Father, Mother, Friend, etc.
+  phone           String    @db.VarChar(20)
+  id_proof_type   String?   @db.VarChar(50) // Aadhar, PAN, DL, etc.
+  id_proof_number String?   @db.VarChar(50)
+  
+  check_in_time   DateTime  @default(now())
+  check_out_time  DateTime?
+  purpose         String?   @db.Text
+  
+  created_at      DateTime  @default(now())
+
+  student         Student   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  room            Room?     @relation(fields: [room_id], references: [id])
+
+  @@index([student_id])
+  @@index([check_in_time])
+  @@map("visitors")
+}
+
+// ─────────────────────────────────────────────
+// 14. MENU
+// ─────────────────────────────────────────────
+
+model Menu {
+  id         BigInt   @id @default(autoincrement())
+  date       DateTime @unique @db.Date
+  breakfast  String   @db.Text
+  lunch      String   @db.Text
+  dinner     String   @db.Text
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([date])
+  @@map("menus")
+}
+
+// ─────────────────────────────────────────────
+// 15. STAFF
+// ─────────────────────────────────────────────
+
+model Staff {
+  id         BigInt   @id @default(autoincrement())
+  name       String   @db.VarChar(150)
+  role       String   @db.VarChar(50) // Warden, Caretaker, Security, etc.
+  phone      String   @db.VarChar(20)
+  email      String   @unique @db.VarChar(255)
+  address    String?  @db.Text
+  salary     Decimal? @db.Decimal(10, 2)
+  join_date  DateTime @default(now())
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([is_active])
+  @@map("staff")
+}
+
+// ─────────────────────────────────────────────
+// 16. NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model Notification {
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt
+  title      String   @db.VarChar(255)
+  message    String   @db.Text
+  type       String?  @db.VarChar(50) // FEE_DUE, LEAVE_APPROVED, etc.
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([is_read])
+  @@map("notifications")
+}
