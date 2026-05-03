@@ -24,24 +24,24 @@ export class DepartmentsService {
   }
 
   async findOne(id: number) {
-    const dept = await this.prisma.department.findUnique({ where: { id } });
+    const dept = await this.prisma.department.findUnique({ where: { id: BigInt(id) } });
     if (!dept) throw new NotFoundException('Department not found');
     return { message: 'Department fetched', data: dept };
   }
 
   async update(id: number, dto: UpdateDepartmentDto) {
-    const dept = await this.prisma.department.findUnique({ where: { id } });
+    const dept = await this.prisma.department.findUnique({ where: { id: BigInt(id) } });
     if (!dept) throw new NotFoundException('Department not found');
 
-    const updated = await this.prisma.department.update({ where: { id }, data: dto });
+    const updated = await this.prisma.department.update({ where: { id: BigInt(id) }, data: dto });
     return { message: 'Department updated', data: updated };
   }
 
   async remove(id: number) {
-    const dept = await this.prisma.department.findUnique({ where: { id } });
+    const dept = await this.prisma.department.findUnique({ where: { id: BigInt(id) } });
     if (!dept) throw new NotFoundException('Department not found');
 
-    await this.prisma.department.delete({ where: { id } });
+    await this.prisma.department.delete({ where: { id: BigInt(id) } });
     return { message: 'Department deleted' };
   }
 }

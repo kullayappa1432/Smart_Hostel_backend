@@ -1,5 +1,5 @@
 // Hostel Management System - Prisma Schema v3.0
-// Database: SQLite
+// Database: PostgreSQL
 // Enhanced with Fees, Payments, Leave Requests, Visitors
 
 generator client {
@@ -109,7 +109,7 @@ enum StudentStatus {
 // ─────────────────────────────────────────────
 
 model Department {
-  id              Int    @id @default(autoincrement())
+  id              BigInt    @id @default(autoincrement())
   department_name String
   department_code String    @unique
   created_at      DateTime  @default(now())
@@ -126,7 +126,7 @@ model Department {
 // ─────────────────────────────────────────────
 
 model Semester {
-  id               Int    @id @default(autoincrement())
+  id               BigInt    @id @default(autoincrement())
   semester_number  Int
   academic_year    String
   is_active        Boolean   @default(false)
@@ -146,7 +146,7 @@ model Semester {
 // ─────────────────────────────────────────────
 
 model Student {
-  id                 Int         @id @default(autoincrement())
+  id                 BigInt         @id @default(autoincrement())
   hall_ticket_number String         @unique
   name               String
   gender             Gender
@@ -157,8 +157,8 @@ model Student {
   college_name       String         @default("Your College Name")
   course             String
   year               Int?           // 1, 2, 3, 4
-  department_id      Int
-  semester_id        Int
+  department_id      BigInt
+  semester_id        BigInt
   
   // Parent/Guardian Info
   parent_name        String?
@@ -197,14 +197,14 @@ model Student {
 // ─────────────────────────────────────────────
 
 model User {
-  id                     Int    @id @default(autoincrement())
+  id                     BigInt    @id @default(autoincrement())
   uuid                   String    @unique
   role                   Role      @default(STUDENT)
   full_name              String
   email                  String    @unique
   phone                  String?
   password_hash          String
-  student_id             Int?   @unique
+  student_id             BigInt?   @unique
   is_active              Boolean   @default(true)
   last_login_at          DateTime?
   reset_token_hash       String?
@@ -226,7 +226,7 @@ model User {
 // ─────────────────────────────────────────────
 
 model Hostel {
-  id           Int           @id @default(autoincrement())
+  id           BigInt           @id @default(autoincrement())
   hostel_name  String
   gender_type  HostelGenderType
   address      String?
@@ -245,13 +245,13 @@ model Hostel {
 // ─────────────────────────────────────────────
 
 model Room {
-  id             Int     @id @default(autoincrement())
+  id             BigInt     @id @default(autoincrement())
   room_number    String
-  hostel_id      Int
+  hostel_id      BigInt
   block_name     String
   floor_number   Int
-  department_id  Int
-  semester_id    Int
+  department_id  BigInt
+  semester_id    BigInt
   
   // Room Details
   room_type      RoomType   @default(STANDARD)
@@ -284,9 +284,9 @@ model Room {
 // ─────────────────────────────────────────────
 
 model Allocation {
-  id              Int    @id @default(autoincrement())
-  student_id      Int    @unique
-  room_id         Int
+  id              BigInt    @id @default(autoincrement())
+  student_id      BigInt    @unique
+  room_id         BigInt
   bed_no          Int?      // Bed number within the room
   check_in_date   DateTime  @default(now())
   check_out_date  DateTime?
@@ -308,8 +308,8 @@ model Allocation {
 // ─────────────────────────────────────────────
 
 model Fee {
-  id                Int        @id @default(autoincrement())
-  student_id        Int
+  id                BigInt        @id @default(autoincrement())
+  student_id        BigInt
   
   // Period
   month             Int           // 1-12
@@ -354,9 +354,9 @@ model Fee {
 // ─────────────────────────────────────────────
 
 model FeePayment {
-  id                Int        @id @default(autoincrement())
-  fee_id            Int
-  student_id        Int
+  id                BigInt        @id @default(autoincrement())
+  fee_id            BigInt
+  student_id        BigInt
   
   amount            Decimal
   payment_method    PaymentMethod
@@ -386,9 +386,9 @@ model FeePayment {
 // ─────────────────────────────────────────────
 
 model Attendance {
-  id             Int           @id @default(autoincrement())
-  student_id     Int
-  semester_id    Int
+  id             BigInt           @id @default(autoincrement())
+  student_id     BigInt
+  semester_id    BigInt
   date           DateTime
   status         AttendanceStatus
   check_in_time  DateTime?
@@ -411,9 +411,9 @@ model Attendance {
 // ─────────────────────────────────────────────
 
 model Complaint {
-  id          Int             @id @default(autoincrement())
-  student_id  Int
-  room_id     Int?
+  id          BigInt             @id @default(autoincrement())
+  student_id  BigInt
+  room_id     BigInt?
   
   title       String
   type        ComplaintType
@@ -424,7 +424,7 @@ model Complaint {
   file_url    String?
   
   // Resolution
-  resolved_by Int?
+  resolved_by BigInt?
   resolved_at DateTime?
   resolution  String?
   
@@ -446,8 +446,8 @@ model Complaint {
 // ─────────────────────────────────────────────
 
 model LeaveRequest {
-  id          Int      @id @default(autoincrement())
-  student_id  Int
+  id          BigInt      @id @default(autoincrement())
+  student_id  BigInt
   
   from_date   DateTime
   to_date     DateTime
@@ -455,7 +455,7 @@ model LeaveRequest {
   status      LeaveStatus @default(PENDING)
   
   // Approval
-  approved_by Int?
+  approved_by BigInt?
   approved_at DateTime?
   remarks     String?
   
@@ -476,9 +476,9 @@ model LeaveRequest {
 // ─────────────────────────────────────────────
 
 model Visitor {
-  id              Int    @id @default(autoincrement())
-  student_id      Int
-  room_id         Int?
+  id              BigInt    @id @default(autoincrement())
+  student_id      BigInt
+  room_id         BigInt?
   
   visitor_name    String
   relation        String    // Father, Mother, Friend, etc.
@@ -505,7 +505,7 @@ model Visitor {
 // ─────────────────────────────────────────────
 
 model Menu {
-  id         Int   @id @default(autoincrement())
+  id         BigInt   @id @default(autoincrement())
   date       DateTime @unique
   breakfast  String
   lunch      String
@@ -522,7 +522,7 @@ model Menu {
 // ─────────────────────────────────────────────
 
 model Staff {
-  id         Int   @id @default(autoincrement())
+  id         BigInt   @id @default(autoincrement())
   name       String
   role       String   // Warden, Caretaker, Security, etc.
   phone      String
@@ -543,8 +543,8 @@ model Staff {
 // ─────────────────────────────────────────────
 
 model Notification {
-  id         Int   @id @default(autoincrement())
-  user_id    Int
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt
   title      String
   message    String
   type       String?  // FEE_DUE, LEAVE_APPROVED, etc.

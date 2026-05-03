@@ -8,7 +8,11 @@ export class VisitorsService {
 
   async create(createVisitorDto: CreateVisitorDto) {
     return this.prisma.visitor.create({
-      data: createVisitorDto,
+      data: {
+        ...createVisitorDto,
+        student_id: BigInt(createVisitorDto.student_id),
+        room_id: createVisitorDto.room_id ? BigInt(createVisitorDto.room_id) : undefined,
+      },
       include: {
         student: {
           select: {
@@ -34,11 +38,11 @@ export class VisitorsService {
     const where: any = {};
 
     if (query.student_id) {
-      where.student_id = query.student_id;
+      where.student_id = BigInt(query.student_id);
     }
 
     if (query.room_id) {
-      where.room_id = query.room_id;
+      where.room_id = BigInt(query.room_id);
     }
 
     if (query.checked_out === 'true') {
@@ -73,7 +77,7 @@ export class VisitorsService {
 
   async findOne(id: number) {
     const visitor = await this.prisma.visitor.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         student: {
           select: {
@@ -111,7 +115,7 @@ export class VisitorsService {
     await this.findOne(id);
 
     return this.prisma.visitor.update({
-      where: { id },
+      where: { id: BigInt(id) },
       data: {
         check_out_time: new Date(checkOutVisitorDto.check_out_time),
       },
@@ -138,7 +142,7 @@ export class VisitorsService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.visitor.delete({ where: { id } });
+    return this.prisma.visitor.delete({ where: { id: BigInt(id) } });
   }
 
   // Get active visitors (not checked out)
@@ -175,7 +179,7 @@ export class VisitorsService {
   // Get visitor history for a student
   async getVisitorHistory(studentId: number) {
     return this.prisma.visitor.findMany({
-      where: { student_id: studentId },
+      where: { student_id: BigInt(studentId) },
       include: {
         room: {
           select: {

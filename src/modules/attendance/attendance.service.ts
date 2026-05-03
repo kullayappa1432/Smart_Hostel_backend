@@ -10,13 +10,13 @@ export class AttendanceService {
     const attendance = await this.prisma.attendance.upsert({
       where: {
         student_id_date: {
-          student_id: dto.student_id,
+          student_id: BigInt(dto.student_id),
           date: new Date(dto.date),
         },
       },
       create: {
-        student_id: dto.student_id,
-        semester_id: dto.semester_id,
+        student_id: BigInt(dto.student_id),
+        semester_id: BigInt(dto.semester_id),
         date: new Date(dto.date),
         status: dto.status,
       },
@@ -34,8 +34,8 @@ export class AttendanceService {
 
   async findAll(filter: AttendanceFilterDto) {
     const where: any = {};
-    if (filter.student_id) where.student_id = filter.student_id;
-    if (filter.semester_id) where.semester_id = filter.semester_id;
+    if (filter.student_id) where.student_id = BigInt(filter.student_id);
+    if (filter.semester_id) where.semester_id = BigInt(filter.semester_id);
     if (filter.from_date || filter.to_date) {
       where.date = {};
       if (filter.from_date) where.date.gte = new Date(filter.from_date);
@@ -52,11 +52,11 @@ export class AttendanceService {
   }
 
   async getMyAttendance(userId: number, semesterId?: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(userId) } });
     if (!user?.student_id) throw new ForbiddenException('No student profile linked');
 
     const where: any = { student_id: user.student_id };
-    if (semesterId) where.semester_id = semesterId;
+    if (semesterId) where.semester_id = BigInt(semesterId);
 
     const records = await this.prisma.attendance.findMany({
       where,

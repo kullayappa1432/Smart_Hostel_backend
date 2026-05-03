@@ -10,7 +10,7 @@ export class RoomsService {
     const exists = await this.prisma.room.findUnique({
       where: {
         hostel_id_room_number: {
-          hostel_id: dto.hostel_id,
+          hostel_id: BigInt(dto.hostel_id),
           room_number: dto.room_number,
         },
       },
@@ -20,11 +20,11 @@ export class RoomsService {
     const room = await this.prisma.room.create({
       data: {
         room_number: dto.room_number,
-        hostel_id: dto.hostel_id,
+        hostel_id: BigInt(dto.hostel_id),
         block_name: dto.block_name,
         floor_number: dto.floor_number,
-        department_id: dto.department_id,
-        semester_id: dto.semester_id,
+        department_id: BigInt(dto.department_id),
+        semester_id: BigInt(dto.semester_id),
         capacity: dto.capacity,
       },
       include: { hostel: true, department: true, semester: true },
@@ -35,9 +35,9 @@ export class RoomsService {
 
   async findAll(filter: RoomFilterDto) {
     const where: any = {};
-    if (filter.hostel_id) where.hostel_id = filter.hostel_id;
-    if (filter.department_id) where.department_id = filter.department_id;
-    if (filter.semester_id) where.semester_id = filter.semester_id;
+    if (filter.hostel_id) where.hostel_id = BigInt(filter.hostel_id);
+    if (filter.department_id) where.department_id = BigInt(filter.department_id);
+    if (filter.semester_id) where.semester_id = BigInt(filter.semester_id);
     if (filter.block_name) where.block_name = filter.block_name;
     if (filter.floor_number !== undefined) where.floor_number = filter.floor_number;
     if (filter.available !== undefined) where.available = filter.available;
@@ -61,7 +61,7 @@ export class RoomsService {
 
   async findAvailableForStudent(studentId: number) {
     const student = await this.prisma.student.findUnique({
-      where: { id: studentId },
+      where: { id: BigInt(studentId) },
       include: { department: true, semester: true },
     });
     if (!student) throw new NotFoundException('Student not found');
@@ -90,7 +90,7 @@ export class RoomsService {
 
   async findOne(id: number) {
     const room = await this.prisma.room.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         hostel: true,
         department: true,
@@ -105,18 +105,18 @@ export class RoomsService {
   }
 
   async update(id: number, dto: UpdateRoomDto) {
-    const room = await this.prisma.room.findUnique({ where: { id } });
+    const room = await this.prisma.room.findUnique({ where: { id: BigInt(id) } });
     if (!room) throw new NotFoundException('Room not found');
 
     const updated = await this.prisma.room.update({
-      where: { id },
+      where: { id: BigInt(id) },
       data: {
         ...(dto.room_number && { room_number: dto.room_number }),
-        ...(dto.hostel_id && { hostel_id: dto.hostel_id }),
+        ...(dto.hostel_id && { hostel_id: BigInt(dto.hostel_id) }),
         ...(dto.block_name && { block_name: dto.block_name }),
         ...(dto.floor_number !== undefined && { floor_number: dto.floor_number }),
-        ...(dto.department_id && { department_id: dto.department_id }),
-        ...(dto.semester_id && { semester_id: dto.semester_id }),
+        ...(dto.department_id && { department_id: BigInt(dto.department_id) }),
+        ...(dto.semester_id && { semester_id: BigInt(dto.semester_id) }),
         ...(dto.capacity && { capacity: dto.capacity }),
       },
       include: { hostel: true, department: true, semester: true },
@@ -126,10 +126,10 @@ export class RoomsService {
   }
 
   async remove(id: number) {
-    const room = await this.prisma.room.findUnique({ where: { id } });
+    const room = await this.prisma.room.findUnique({ where: { id: BigInt(id) } });
     if (!room) throw new NotFoundException('Room not found');
 
-    await this.prisma.room.delete({ where: { id } });
+    await this.prisma.room.delete({ where: { id: BigInt(id) } });
     return { message: 'Room deleted' };
   }
 

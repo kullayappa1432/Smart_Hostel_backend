@@ -22,6 +22,7 @@ export class LeaveRequestsService {
     return this.prisma.leaveRequest.create({
       data: {
         ...createLeaveRequestDto,
+        student_id: BigInt(createLeaveRequestDto.student_id),
         from_date: fromDate,
         to_date: toDate,
         status: 'PENDING',
@@ -44,7 +45,7 @@ export class LeaveRequestsService {
     const where: any = {};
 
     if (query.student_id) {
-      where.student_id = query.student_id;
+      where.student_id = BigInt(query.student_id);
     }
 
     if (query.status) {
@@ -77,7 +78,7 @@ export class LeaveRequestsService {
 
   async findOne(id: number) {
     const leaveRequest = await this.prisma.leaveRequest.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         student: {
           select: {
@@ -122,7 +123,7 @@ export class LeaveRequestsService {
     }
 
     return this.prisma.leaveRequest.update({
-      where: { id },
+      where: { id: BigInt(id) },
       data,
       include: {
         student: {
@@ -153,11 +154,11 @@ export class LeaveRequestsService {
     }
 
     return this.prisma.leaveRequest.update({
-      where: { id },
+      where: { id: BigInt(id) },
       data: {
         status: approveLeaveDto.status,
         remarks: approveLeaveDto.remarks,
-        approved_by: approverId,
+        approved_by: BigInt(approverId),
         approved_at: new Date(),
       },
       include: {
@@ -183,7 +184,7 @@ export class LeaveRequestsService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.leaveRequest.delete({ where: { id } });
+    return this.prisma.leaveRequest.delete({ where: { id: BigInt(id) } });
   }
 
   // Get pending leave requests

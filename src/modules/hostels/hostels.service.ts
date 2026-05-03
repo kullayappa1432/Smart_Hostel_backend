@@ -21,7 +21,7 @@ export class HostelsService {
 
   async findOne(id: number) {
     const hostel = await this.prisma.hostel.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         rooms: {
           include: { department: true, semester: true },
@@ -34,18 +34,18 @@ export class HostelsService {
   }
 
   async update(id: number, dto: UpdateHostelDto) {
-    const hostel = await this.prisma.hostel.findUnique({ where: { id } });
+    const hostel = await this.prisma.hostel.findUnique({ where: { id: BigInt(id) } });
     if (!hostel) throw new NotFoundException('Hostel not found');
 
-    const updated = await this.prisma.hostel.update({ where: { id }, data: dto });
+    const updated = await this.prisma.hostel.update({ where: { id: BigInt(id) }, data: dto });
     return { message: 'Hostel updated', data: updated };
   }
 
   async remove(id: number) {
-    const hostel = await this.prisma.hostel.findUnique({ where: { id } });
+    const hostel = await this.prisma.hostel.findUnique({ where: { id: BigInt(id) } });
     if (!hostel) throw new NotFoundException('Hostel not found');
 
-    await this.prisma.hostel.delete({ where: { id } });
+    await this.prisma.hostel.delete({ where: { id: BigInt(id) } });
     return { message: 'Hostel deleted' };
   }
 }

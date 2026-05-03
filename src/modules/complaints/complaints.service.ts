@@ -11,7 +11,7 @@ export class ComplaintsService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: number, dto: CreateComplaintDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(userId) } });
     if (!user?.student_id) throw new ForbiddenException('No student profile linked');
 
     const complaint = await this.prisma.complaint.create({
@@ -21,7 +21,7 @@ export class ComplaintsService {
         type: dto.type,
         description: dto.description,
         priority: dto.priority || 'MEDIUM',
-        room_id: dto.room_id,
+        room_id: dto.room_id ? BigInt(dto.room_id) : undefined,
         file_url: dto.file_url,
         status: 'OPEN',
       },
@@ -58,7 +58,7 @@ export class ComplaintsService {
 
   async findOne(id: number) {
     const complaint = await this.prisma.complaint.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: { student: { include: { department: true } } },
     });
     if (!complaint) throw new NotFoundException('Complaint not found');
@@ -66,7 +66,7 @@ export class ComplaintsService {
   }
 
   async getMyComplaints(userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(userId) } });
     if (!user?.student_id) throw new ForbiddenException('No student profile linked');
 
     const complaints = await this.prisma.complaint.findMany({
@@ -78,11 +78,11 @@ export class ComplaintsService {
   }
 
   async updateStatus(id: number, dto: UpdateComplaintStatusDto) {
-    const complaint = await this.prisma.complaint.findUnique({ where: { id } });
+    const complaint = await this.prisma.complaint.findUnique({ where: { id: BigInt(id) } });
     if (!complaint) throw new NotFoundException('Complaint not found');
 
     const updated = await this.prisma.complaint.update({
-      where: { id },
+      where: { id: BigInt(id) },
       data: {
         status: dto.status,
         resolution: dto.resolution,

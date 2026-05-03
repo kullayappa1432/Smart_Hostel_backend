@@ -15,8 +15,8 @@ export class AllocationsService {
   // ─── Admin: Allocate any student to any room ──────────────────────────────────
 
   async adminAllocate(dto: CreateAllocationDto) {
-    const studentId = dto.student_id;
-    const roomId = dto.room_id;
+    const studentId = BigInt(dto.student_id);
+    const roomId = BigInt(dto.room_id);
 
     await this.validateAllocation(studentId, roomId);
 
@@ -49,14 +49,14 @@ export class AllocationsService {
 
   async studentSelfAllocate(userId: number, dto: StudentSelfAllocateDto) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: BigInt(userId) },
       include: { student: true },
     });
 
     if (!user?.student_id) throw new ForbiddenException('No student profile linked to this account');
 
     const studentId = user.student_id;
-    const roomId = dto.room_id;
+    const roomId = BigInt(dto.room_id);
 
     await this.validateAllocation(studentId, roomId);
 
@@ -109,7 +109,7 @@ export class AllocationsService {
   // ─── Get my allocation (student) ─────────────────────────────────────────────
 
   async getMyAllocation(userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(userId) } });
     if (!user?.student_id) {
       return { message: 'No student profile found', data: null };
     }
@@ -126,11 +126,11 @@ export class AllocationsService {
   // ─── Deallocate ───────────────────────────────────────────────────────────────
 
   async deallocate(id: number) {
-    const allocation = await this.prisma.allocation.findUnique({ where: { id } });
+    const allocation = await this.prisma.allocation.findUnique({ where: { id: BigInt(id) } });
     if (!allocation) throw new NotFoundException('Allocation not found');
 
     await this.prisma.$transaction(async (tx) => {
-      await tx.allocation.delete({ where: { id } });
+      await tx.allocation.delete({ where: { id: BigInt(id) } });
 
       await tx.room.update({
         where: { id: allocation.room_id },
@@ -146,7 +146,7 @@ export class AllocationsService {
 
   // ─── Validation Logic ─────────────────────────────────────────────────────────
 
-  private async validateAllocation(studentId: number, roomId: number) {
+  private async validateAllocation(studentId: bigint, roomId: bigint) {
     // Check student exists
     const student = await this.prisma.student.findUnique({
       where: { id: studentId },

@@ -23,12 +23,12 @@ export class FeePaymentsService {
 
   // ─── Create Razorpay Order ────────────────────────────────────────────────────
   async createRazorpayOrder(feeId: number, userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(userId) } });
     const studentId = user?.student_id;
     if (!studentId) throw new BadRequestException('No student profile linked');
 
     const fee = await this.prisma.fee.findUnique({
-      where: { id: feeId },
+      where: { id: BigInt(feeId) },
       include: { student: { select: { name: true, email: true, phone: true } } },
     });
 
@@ -101,7 +101,7 @@ export class FeePaymentsService {
     razorpay_payment_id: string,
     razorpay_signature: string,
   ) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(userId) } });
     const studentId = user?.student_id;
     if (!studentId) throw new BadRequestException('No student profile linked');
 
@@ -114,7 +114,7 @@ export class FeePaymentsService {
       throw new BadRequestException('Invalid payment signature');
     }
 
-    const fee = await this.prisma.fee.findUnique({ where: { id: feeId } });
+    const fee = await this.prisma.fee.findUnique({ where: { id: BigInt(feeId) } });
     if (!fee) throw new NotFoundException('Fee not found');
 
     const amount = Number(fee.balance_amount);
@@ -122,7 +122,7 @@ export class FeePaymentsService {
     // Record payment
     await this.prisma.feePayment.create({
       data: {
-        fee_id: feeId,
+        fee_id: BigInt(feeId),
         student_id: studentId,
         amount,
         payment_method: 'RAZORPAY',
@@ -137,7 +137,7 @@ export class FeePaymentsService {
 
     // Update fee to PAID
     await this.prisma.fee.update({
-      where: { id: feeId },
+      where: { id: BigInt(feeId) },
       data: {
         paid_amount: Number(fee.paid_amount) + amount,
         balance_amount: 0,
@@ -151,7 +151,7 @@ export class FeePaymentsService {
   // ─── Manual payment (admin) ───────────────────────────────────────────────────
   async create(createFeePaymentDto: CreateFeePaymentDto) {
     const fee = await this.prisma.fee.findUnique({
-      where: { id: createFeePaymentDto.fee_id },
+      where: { id: BigInt(createFeePaymentDto.fee_id) },
     });
 
     if (!fee) throw new NotFoundException('Fee not found');
@@ -161,7 +161,11 @@ export class FeePaymentsService {
     }
 
     const payment = await this.prisma.feePayment.create({
-      data: createFeePaymentDto,
+      data: {
+        ...createFeePaymentDto,
+        fee_id: BigInt(createFeePaymentDto.fee_id),
+        student_id: BigInt(createFeePaymentDto.student_id),
+      },
       include: {
         student: {
           select: { id: true, hall_ticket_number: true, name: true, email: true, phone: true },
@@ -174,7 +178,7 @@ export class FeePaymentsService {
     const newBalanceAmount = Number(fee.total_amount) - newPaidAmount;
 
     await this.prisma.fee.update({
-      where: { id: createFeePaymentDto.fee_id },
+      where: { id: BigInt(createFeePaymentDto.fee_id) },
       data: {
         paid_amount: newPaidAmount,
         balance_amount: newBalanceAmount,
@@ -188,8 +192,8 @@ export class FeePaymentsService {
   // ─── List all payments ────────────────────────────────────────────────────────
   async findAll(query: GetFeePaymentsQueryDto) {
     const where: any = {};
-    if (query.student_id) where.student_id = query.student_id;
-    if (query.fee_id) where.fee_id = query.fee_id;
+    if (query.student_id) where.student_id = BigInt(query.student_id);
+    if (query.fee_id) where.fee_id = BigInt(query.fee_id);
     if (query.payment_method) where.payment_method = query.payment_method;
 
     return this.prisma.feePayment.findMany({
@@ -208,7 +212,7 @@ export class FeePaymentsService {
 
   async findOne(id: number) {
     const payment = await this.prisma.feePayment.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         student: {
           select: { id: true, hall_ticket_number: true, name: true, email: true, phone: true },
@@ -237,12 +241,12 @@ export class FeePaymentsService {
       });
     }
 
-    return this.prisma.feePayment.delete({ where: { id } });
+    return this.prisma.feePayment.delete({ where: { id: BigInt(id) } });
   }
 
   // ─── Payment history for a student (by user id) ───────────────────────────────
   async getPaymentHistory(userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(userId) } });
     const studentId = user?.student_id;
     if (!studentId) return [];
 

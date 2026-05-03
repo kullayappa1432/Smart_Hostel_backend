@@ -35,13 +35,13 @@ export class SemestersService {
   }
 
   async findOne(id: number) {
-    const semester = await this.prisma.semester.findUnique({ where: { id } });
+    const semester = await this.prisma.semester.findUnique({ where: { id: BigInt(id) } });
     if (!semester) throw new NotFoundException('Semester not found');
     return { message: 'Semester fetched', data: semester };
   }
 
   async update(id: number, dto: UpdateSemesterDto) {
-    const semester = await this.prisma.semester.findUnique({ where: { id } });
+    const semester = await this.prisma.semester.findUnique({ where: { id: BigInt(id) } });
     if (!semester) throw new NotFoundException('Semester not found');
 
     // If setting active, deactivate others first
@@ -49,15 +49,15 @@ export class SemestersService {
       await this.prisma.semester.updateMany({ data: { is_active: false } });
     }
 
-    const updated = await this.prisma.semester.update({ where: { id }, data: dto });
+    const updated = await this.prisma.semester.update({ where: { id: BigInt(id) }, data: dto });
     return { message: 'Semester updated', data: updated };
   }
 
   async remove(id: number) {
-    const semester = await this.prisma.semester.findUnique({ where: { id } });
+    const semester = await this.prisma.semester.findUnique({ where: { id: BigInt(id) } });
     if (!semester) throw new NotFoundException('Semester not found');
 
-    await this.prisma.semester.delete({ where: { id } });
+    await this.prisma.semester.delete({ where: { id: BigInt(id) } });
     return { message: 'Semester deleted' };
   }
 }

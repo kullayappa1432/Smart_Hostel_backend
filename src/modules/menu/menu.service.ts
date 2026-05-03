@@ -41,21 +41,21 @@ export class MenuService {
   }
 
   async update(id: number, dto: UpdateMenuDto) {
-    const menu = await this.prisma.menu.findUnique({ where: { id } });
+    const menu = await this.prisma.menu.findUnique({ where: { id: BigInt(id) } });
     if (!menu) throw new NotFoundException('Menu not found');
 
     const updated = await this.prisma.menu.update({
-      where: { id },
+      where: { id: BigInt(id) },
       data: { ...dto, ...(dto.date && { date: new Date(dto.date) }) },
     });
     return { message: 'Menu updated', data: updated };
   }
 
   async remove(id: number) {
-    const menu = await this.prisma.menu.findUnique({ where: { id } });
+    const menu = await this.prisma.menu.findUnique({ where: { id: BigInt(id) } });
     if (!menu) throw new NotFoundException('Menu not found');
 
-    await this.prisma.menu.delete({ where: { id } });
+    await this.prisma.menu.delete({ where: { id: BigInt(id) } });
     return { message: 'Menu deleted' };
   }
 }

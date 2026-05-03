@@ -46,7 +46,7 @@ export class UsersService {
 
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         student: { include: { department: true, semester: true } },
       },
@@ -80,11 +80,11 @@ export class UsersService {
   }
 
   async updateStatus(id: number, dto: UpdateUserStatusDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(id) } });
     if (!user) throw new NotFoundException('User not found');
 
     const updated = await this.prisma.user.update({
-      where: { id },
+      where: { id: BigInt(id) },
       data: { is_active: dto.is_active },
     });
 
@@ -95,10 +95,10 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(id) } });
     if (!user) throw new NotFoundException('User not found');
 
-    await this.prisma.user.delete({ where: { id } });
+    await this.prisma.user.delete({ where: { id: BigInt(id) } });
     return { message: 'User deleted successfully' };
   }
 }
