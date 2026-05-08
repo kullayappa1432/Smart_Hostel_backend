@@ -6,6 +6,7 @@ import {
   IsString,
   MinLength,
   Matches,
+  Length,
 } from 'class-validator';
 
 export class RegisterStudentDto {
@@ -45,8 +46,21 @@ export class ForgotPasswordDto {
   email: string;
 }
 
+export class VerifyOtpDto {
+  @ApiProperty({ example: 'john@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({ example: '123456', description: '6-digit OTP' })
+  @IsString()
+  @Length(6, 6, { message: 'OTP must be exactly 6 digits' })
+  @Matches(/^\d{6}$/, { message: 'OTP must contain only digits' })
+  otp: string;
+}
+
 export class ResetPasswordDto {
-  @ApiProperty({ description: 'Reset token received via email' })
+  @ApiProperty({ description: 'Reset token received after OTP verification' })
   @IsString()
   @IsNotEmpty()
   token: string;

@@ -1,26 +1,31 @@
 import {
   Injectable,
   UnauthorizedException,
-  BadRequestException,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
-import { RegisterStudentDto, ForgotPasswordDto, ResetPasswordDto } from './dto/register.dto';
+import {
+  RegisterStudentDto,
+  ForgotPasswordDto,
+  VerifyOtpDto,
+  ResetPasswordDto,
+} from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { Role } from '@prisma/client';
+import { OtpService } from './services/otp.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private otpService: OtpService,
   ) {}
 
-  // ─── Login ───────────────────────────────────────────────────────────────────
   async login(dto: LoginDto) {
     const { email, password } = dto;
 
@@ -34,23 +39,22 @@ export class AuthService {
     }
 
     if (!user.is_active) {
-      throw new UnauthorizedException('Account is inactive. Please contact admin.');
+      throw new UnauthorizedException(
+        'Account is inactive. Please contact admin.',
+      );
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
-
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Generate token with uuid (not id)
     const access_token = this.jwtService.sign({
-      sub: user.uuid,  // ✅ Use uuid instead of id
+      sub: user.uuid,
       email: user.email,
       role: user.role,
     });
 
-    // Remove sensitive fields
     const { password_hash, reset_token_hash, ...safeUser } = user;
 
     return {
@@ -60,10 +64,8 @@ export class AuthService {
       },
     };
   }
-  // ─── Register Student ─────────────────────────────────────────────────────────
 
   async registerStudent(dto: RegisterStudentDto) {
-    // Verify hall ticket exists (pre-seeded by admin)
     const student = await this.prisma.student.findUnique({
       where: { hall_ticket_number: dto.hall_ticket_number },
     });
@@ -74,17 +76,19 @@ export class AuthService {
       );
     }
 
-    // Check if student already has an account
     const existingUser = await this.prisma.user.findUnique({
       where: { student_id: student.id },
     });
 
     if (existingUser) {
-      throw new ConflictException('An account already exists for this hall ticket number');
+      throw new ConflictException(
+        'An account already exists for this hall ticket number',
+      );
     }
 
-    // Check email uniqueness
-    const emailExists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (emailExists) throw new ConflictException('Email already in use');
 
     const password_hash = await bcrypt.hash(dto.password, 12);
@@ -111,16 +115,40 @@ export class AuthService {
     };
   }
 
-  // ─── Forgot Password ──────────────────────────────────────────────────────────
-
   async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-    // Always return success to prevent email enumeration
     if (!user) {
       return { message: 'If this email exists, a reset link has been sent' };
     }
 
+    // Generate OTP
+    const otp = await this.otpService.generateOtp(dto.email);
+
+    return {
+      message: 'OTP sent to your email',
+      data: { otp }, // In production, don't return OTP
+    };
+  }
+
+  async verifyOtp(dto: VerifyOtpDto) {
+    const isValid = await this.otpService.verifyOtp(dto.email, dto.otp);
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Generate reset token
     const resetToken = uuidv4();
     const tokenHash = await bcrypt.hash(resetToken, 10);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
@@ -133,15 +161,11 @@ export class AuthService {
       },
     });
 
-    // In production: send email with resetToken
-    // For now, return token in response (dev only)
     return {
-      message: 'Password reset token generated',
-      data: { reset_token: resetToken }, // Remove in production
+      message: 'OTP verified successfully',
+      data: { reset_token: resetToken },
     };
   }
-
-  // ─── Reset Password ───────────────────────────────────────────────────────────
 
   async resetPassword(dto: ResetPasswordDto) {
     const users = await this.prisma.user.findMany({
@@ -150,10 +174,13 @@ export class AuthService {
       },
     });
 
-    let matchedUser: typeof users[0] | null = null;
+    let matchedUser = null;
     for (const user of users) {
       if (user.reset_token_hash) {
-        const isMatch = await bcrypt.compare(dto.token, user.reset_token_hash);
+        const isMatch = await bcrypt.compare(
+          dto.token,
+          user.reset_token_hash,
+        );
         if (isMatch) {
           matchedUser = user;
           break;
@@ -179,11 +206,9 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  // ─── Get Profile ──────────────────────────────────────────────────────────────
-
   async getProfile(userId: number) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: BigInt(userId) },
       include: {
         student: {
           include: {
@@ -198,12 +223,11 @@ export class AuthService {
     if (!user) throw new NotFoundException('User not found');
 
     const { password_hash, reset_token_hash, ...safeUser } = user;
+
     return { message: 'Profile fetched', data: safeUser };
   }
 
-  // ─── Helper ───────────────────────────────────────────────────────────────────
-
-  private generateToken(uuid: string, email: string, role: string): string {
+  private generateToken(uuid: string, email: string, role: string) {
     return this.jwtService.sign({ sub: uuid, email, role });
   }
 }

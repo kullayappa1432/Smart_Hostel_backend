@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 // ─────────────────────────────────────────────
@@ -558,4 +558,21 @@ model Notification {
   @@index([is_read])
   @@map("notifications")
 }
+
+// ─────────────────────────────────────────────
+// 17. OTP (One-Time Password)
+// ─────────────────────────────────────────────
+
+model Otp {
+  id         BigInt    @id @default(autoincrement())
+  email      String
+  otp_code   String
+  expires_at DateTime
+  created_at DateTime  @default(now())
+
+  @@index([email])
+  @@index([expires_at])
+  @@map("otps")
+}
+
 
